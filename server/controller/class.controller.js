@@ -28,10 +28,7 @@ module.exports = {
     newClass.save()
       .then(() => {
         res.setHeader('Content-type', 'application/json');
-        res.status(201).json({
-          status: 'success',
-          message: 'Class created successfully'
-        });
+        res.status(201).json(newClass);
       }).catch(err => {
         res.setHeader('Content-type', 'application/json');
         res.status(500).json({

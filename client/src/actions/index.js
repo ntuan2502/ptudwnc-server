@@ -4,7 +4,9 @@ import {
   SIGN_IN_WITH_SOCIAL,
   FETCH_CLASSES,
   CREATE_CLASS,
-  FETCH_USER
+  FETCH_USER,
+  SHOW_ALERT,
+  HIDE_ALERT,
 } from './type';
 import axios from 'axios';
 import axiosJWT from '../api/axiosJWT';
@@ -25,6 +27,61 @@ export const signInWithSocial = (accessToken, url) => async (dispatch) => {
     history.push('/');
   } catch(err) {
     console.log(err);
+  }
+}
+
+export const signIn = (formValues) => async (dispatch) => {
+  try {
+    const res = await axios.post('users/login', {
+      email: formValues.emailLogin,
+      password: formValues.passwordLogin
+    });
+    if(res.status === 200) {
+      dispatch ({
+        type: SIGN_IN,
+        payload: res.data
+      });
+      history.push('/');
+      dispatch(hideAlert("Welcome!", 'success'));
+      setTimeout(() => {
+        dispatch(hideAlert());
+      }, 3000);
+    }
+  } catch(err) {
+    dispatch(showAlert(err.response.data.message, 'error'));
+    setTimeout(() => {
+      dispatch(hideAlert());
+    }, 3000)
+  }
+}
+
+export const signUp = (formValues) => async (dispatch) => {
+  try {
+    const res = await axios.post('/users/signup', formValues);
+    if(res.status === 200) {
+      dispatch(showAlert("Sign up success!", 'success'));
+      setTimeout(() => {
+        dispatch(hideAlert());
+      }, 3000)
+    }
+  } catch(err) {
+    dispatch(showAlert(err.response.data.message, 'error'));
+    setTimeout(() => {
+      dispatch(hideAlert());
+    }, 3000)
+  }
+}
+
+export const showAlert = (message, type) => {
+  return {
+    type: SHOW_ALERT,
+    payload: {message: message, type: type}
+  }
+}
+
+export const hideAlert = () => {
+  return {
+    type: HIDE_ALERT
   }
 }
 

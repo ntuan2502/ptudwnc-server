@@ -10,3 +10,6 @@ export const UPDATE_CLASS = "UPDATE_CLASS";
 
 export const FETCH_USER = "FETCH_USER";
 export const FETCH_USERS = "FETCH_USERS";
+
+export const SHOW_ALERT = "SHOW_ALERT";
+export const HIDE_ALERT = "HIDE_ALERT";

@@ -1,3 +1,4 @@
+const bcrypt = require('bcrypt');
 const authenticate = require('../authenticate');
 const User = require('../models/users.model');
 module.exports = {
@@ -7,25 +8,27 @@ module.exports = {
 
   postLogin: async (req, res) => {
     const { email, password } = req.body;
-    const user = await User.findOne({email: email, password: password});
-    if(!user) {
-      res.setHeader('Content-Type', 'application/json');
-      res.status(401).json({ success: false, message: 'User not found' });
+    const user = await User.findOne({email: email});
+    if(user) {
+      if(bcrypt.compareSync(password, user.password)) {
+        const token = authenticate.getToken(user);
+        res.setHeader('Content-Type', 'application/json');
+        res.status(200).json({ success: true, currentUser: user , accessToken: token });
+      }
     } else {
-      const token = authenticate.getToken(user);
       res.setHeader('Content-Type', 'application/json');
-      res.status(200).json({ success: true, currentUser: user , accessToken: token });
+      res.status(401).json({ success: false, message: 'User or password incorrect!' });
     }
   },
 
   postSignup: async (req, res) => {
     const user = await User.findOne({email: req.body.email});
-    console.log(user);
     if(user) {
       res.setHeader('Content-Type', 'application/json');
-      res.status(401).json({ success: false, message: 'User already existed!' });
+      res.status(406).json({ success: false, message: 'User already existed!' });
     } else {
       const newUser = new User(req.body);
+      newUser.password = bcrypt.hashSync(req.body.password, 10);
       await newUser.save();
       res.setHeader('Content-Type', 'application/json');
       res.status(200).json({ success: true, message: 'Signup successful'});

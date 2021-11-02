@@ -2,6 +2,8 @@ import React, { useState, useRef } from "react";
 import { connect } from "react-redux";
 import { Redirect } from "react-router-dom";
 import { useForm } from "react-hook-form";
+import { signIn, signUp } from "../actions";
+import Notification from "../components/notification/Notification";
 import GoogleAuth from "../components/googleAuth/GoogleAuth";
 import FacebookAuth from "../components/facebookAuth/FacebookAuth";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -15,7 +17,7 @@ const schema = yup
     password: yup.string().min(6).max(30).required(),
     repeatPassword: yup
       .string()
-      .oneOf([yup.ref("password")], "Passwords must match"),
+      .oneOf([yup.ref("password")], "Password must match"),
   })
   .required();
 
@@ -31,15 +33,25 @@ function Login(props) {
     resolver: yupResolver(schema),
   });
 
+  const {
+    register: register2,
+    handleSubmit: handleSubmit2,
+    formState: { errors: errors2 },
+  } = useForm();
+
   const password = useRef({});
   password.current = watch("password", "");
 
   const onSignUpFormSubmit = (data) => {
-    console.log(data);
+    props.signUp({
+      email: data.email,
+      fullName: data.fullName,
+      password: data.password,
+    });
   };
 
   const onLoginFormSubmit = (data) => {
-    console.log(data);
+    props.signIn(data);
   };
 
   const changeToSignInForm = () => {
@@ -63,42 +75,44 @@ function Login(props) {
         <div className="forms-container">
           <div className="signin-signup">
             <form
-              action=""
+              autoComplete="off"
+              onSubmit={handleSubmit2(onLoginFormSubmit)}
               className="sign-in-form"
-              method="POST"
               id="frmSignIn"
             >
               <h2 className="title">Sign in</h2>
               <div className="input-field">
                 <i className="fas fa-user"></i>
-                <input type="text" placeholder="Username" name="namelogin" />
+                <input
+                  {...register2("emailLogin", { required: true })}
+                  name="emailLogin"
+                  type="email"
+                  placeholder="Email"
+                  required
+                />
               </div>
               <div className="input-field">
                 <i className="fas fa-lock"></i>
-                <input type="password" placeholder="Password" name="password" />
+                <input
+                  name="passwordLogin"
+                  type="password"
+                  placeholder="Password"
+                  required
+                  {...register2("passwordLogin", { required: true })}
+                />
               </div>
-              {/* {{#if msg}}
-            {{#each msg}}
-            <p className="text-danger" style="color: red;">{{this}}</p>
-            {{/each}}
-            {{/if}} */}
+
               <input type="submit" value="Login" className="btn-custom solid" />
               <p className="social-text">Or Sign in with social platforms</p>
               <div className="social-media">
-                {/* <a href="/account/facebook/login" className="social-icon">
-                  <i className="fab fa-facebook-f"></i>
-                </a> */}
                 <FacebookAuth />
-                <a href="#" className="social-icon">
+                {/* <a href="#" className="social-icon">
                   <i className="fab fa-twitter"></i>
-                </a>
-                {/* <a href="/account/google/login" className="social-icon">
-                  <i className="fab fa-google"></i>
                 </a> */}
                 <GoogleAuth />
-                <a href="/account/github/login" className="social-icon">
+                {/* <a href="/account/github/login" className="social-icon">
                   <i className="fab fa-github"></i>
-                </a>
+                </a> */}
               </div>
             </form>
             <form
@@ -159,24 +173,20 @@ function Login(props) {
               <span className="text-danger">{errors.fullName?.message}</span>
               <span className="text-danger">{errors.password?.message}</span>
               <span className="text-danger">
-                {errors.confirmPassword?.message}
+                {errors.repeatPassword?.message}
               </span>
 
               <input type="submit" className="btn-custom" value="Sign up" />
               <p className="social-text">Or Sign up with social platforms</p>
               <div className="social-media">
-                <a href="#" className="social-icon">
-                  <i className="fab fa-facebook-f"></i>
-                </a>
-                <a href="#" className="social-icon">
+                <FacebookAuth />
+                {/* <a href="#" className="social-icon">
                   <i className="fab fa-twitter"></i>
-                </a>
-                <a href="#" className="social-icon">
-                  <i className="fab fa-google"></i>
-                </a>
-                <a href="#" className="social-icon">
+                </a> */}
+                <GoogleAuth />
+                {/* <a href="#" className="social-icon">
                   <i className="fab fa-linkedin-in"></i>
-                </a>
+                </a> */}
               </div>
             </form>
           </div>
@@ -221,6 +231,7 @@ function Login(props) {
             />
           </div>
         </div>
+        <Notification notify={props.alert} />
       </div>
     </>
   );
@@ -229,7 +240,8 @@ function Login(props) {
 const mapStateToProps = (state) => {
   return {
     isSignedIn: state.auth.isSignedIn,
+    alert: state.alert,
   };
 };
 
-export default connect(mapStateToProps, null)(Login);
+export default connect(mapStateToProps, { signIn, signUp })(Login);
