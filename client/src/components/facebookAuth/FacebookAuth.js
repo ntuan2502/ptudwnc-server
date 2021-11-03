@@ -5,7 +5,10 @@ import FacebookLogin from 'react-facebook-login/dist/facebook-login-render-props
 
 function FacebookAuth(props) {
   const responseFacebook = (response) => {
-    props.signInWithSocial(response.accessToken, '/users/facebook/token');
+    console.log(response);
+    if(response.accessToken) {
+      props.signInWithSocial(response.accessToken, '/users/facebook/token');
+    }
   }
 
   const componentClicked = () => {

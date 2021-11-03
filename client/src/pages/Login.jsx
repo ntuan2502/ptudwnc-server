@@ -46,6 +46,7 @@ function Login(props) {
   };
 
   const onLoginFormSubmit = (data) => {
+    console.log(data);
     props.signIn(data);
   };
 

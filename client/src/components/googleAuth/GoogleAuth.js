@@ -18,7 +18,9 @@ function GoogleAuth(props) {
   async function onSignInClick() {
     if(auth) {
       await auth.signIn();
-      props.signInWithSocial(auth.currentUser.get().getAuthResponse().access_token, '/users/google/token');
+      if(auth.currentUser.get().getAuthResponse().access_token) {
+        props.signInWithSocial(auth.currentUser.get().getAuthResponse().access_token, '/users/google/token');
+      }
     }
   }
 

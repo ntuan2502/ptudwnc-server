@@ -32,6 +32,7 @@ export const signInWithSocial = (accessToken, url) => async (dispatch) => {
       }, 3000);
     }
   } catch(err) {
+    console.log(err);
     dispatch(showAlert(err.response.data.message, 'error'));
     setTimeout(() => {
       dispatch(hideAlert());
