@@ -5,7 +5,8 @@ import { fetchUser } from '../../actions';
 function UserHeader(props) {
   useEffect(() => {
     props.fetchUser(props.userId);
-  }, [props]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   if(!props.user) {
     return (    

@@ -7,18 +7,29 @@ module.exports = {
   },
 
   postLogin: async (req, res) => {
+    console.log(req.body);
     const { email, password } = req.body;
     const user = await User.findOne({email: email});
+    console.log(user);
     if(user) {
-      if(bcrypt.compareSync(password, user.password)) {
-        const token = authenticate.getToken(user);
+      bcrypt.compare(password, user.password)
+        .then((result => {
+          if(result) {
+            console.log('password match');
+            const token = authenticate.getToken(user);
+            res.setHeader('Content-Type', 'application/json');
+            res.status(200).json({ success: true, currentUser: user , accessToken: token });
+          } else {
+            console.log('password dont');
+            res.setHeader('Content-Type', 'application/json');
+            res.status(401).json({ success: false, message: 'User or password incorrect!' });
+          }
+        }))
+      } else {
+        console.log('password dont');
         res.setHeader('Content-Type', 'application/json');
-        res.status(200).json({ success: true, currentUser: user , accessToken: token });
+        res.status(401).json({ success: false, message: 'User or password incorrect!' });
       }
-    } else {
-      res.setHeader('Content-Type', 'application/json');
-      res.status(401).json({ success: false, message: 'User or password incorrect!' });
-    }
   },
 
   postSignup: async (req, res) => {
@@ -39,12 +50,10 @@ module.exports = {
     if(req.user) {
       const token = authenticate.getToken(req.user);
       res.setHeader('Content-type', 'application/json');
-      res.statusCode = 200;
-      res.json({success: true, currentUser: req.user, accessToken: token});
+      res.status(200).json({success: true, currentUser: req.user, accessToken: token});
     } else {
       res.setHeader('Content-type', 'application/json');
-      res.statusCode = 401;
-      res.json({success: false, message: 'Unauthorized'});
+      res.status(401).json({success: false, message: 'Unauthorized'});
     }
   },
 

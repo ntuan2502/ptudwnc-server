@@ -20,6 +20,7 @@ export const signInWithSocial = (accessToken, url) => async (dispatch) => {
         access_token: accessToken
       }
     });
+    console.log(res);
     if(res.status === 200) {
       dispatch ({
         type: SIGN_IN_WITH_SOCIAL,
