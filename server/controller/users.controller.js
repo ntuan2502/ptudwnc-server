@@ -43,7 +43,7 @@ module.exports = {
       res.json({success: true, currentUser: req.user, accessToken: token});
     } else {
       res.setHeader('Content-type', 'application/json');
-      res.setStatus(401);
+      res.statusCode = 401;
       res.json({success: false, message: 'Unauthorized'});
     }
   },
