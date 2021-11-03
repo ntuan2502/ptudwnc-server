@@ -27,17 +27,12 @@ function Login(props) {
     register,
     handleSubmit,
     watch,
-    getValues,
     formState: { errors },
   } = useForm({
     resolver: yupResolver(schema),
   });
 
-  const {
-    register: register2,
-    handleSubmit: handleSubmit2,
-    formState: { errors: errors2 },
-  } = useForm();
+  const { register: register2, handleSubmit: handleSubmit2 } = useForm();
 
   const password = useRef({});
   password.current = watch("password", "");

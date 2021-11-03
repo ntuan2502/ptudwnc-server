@@ -16,10 +16,10 @@ function GoogleAuth(props) {
   }, []);
 
   async function onSignInClick() {
-    console.log("Click")
-    await auth.signIn();
-    console.log(auth.currentUser.get().getAuthResponse());
-    props.signInWithSocial(auth.currentUser.get().getAuthResponse().access_token, '/users/google/token');
+    if(auth) {
+      await auth.signIn();
+      props.signInWithSocial(auth.currentUser.get().getAuthResponse().access_token, '/users/google/token');
+    }
   }
 
   function renderSignInStatus() {

@@ -12,12 +12,7 @@ import { connect } from "react-redux";
 import { createClass } from "../../actions";
 
 function FormDialog(props) {
-  const {
-    register,
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm();
+  const { control, handleSubmit } = useForm();
 
   const onSubmit = (data) => {
     props.createClass(data);

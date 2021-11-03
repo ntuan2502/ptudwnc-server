@@ -11,7 +11,7 @@ function Home(props) {
 
   useEffect(() => {
     props.fetchClasses();
-  }, []);
+  }, [props]);
 
   function handleShowDialog() {
     setOpen(true);

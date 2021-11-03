@@ -20,13 +20,22 @@ export const signInWithSocial = (accessToken, url) => async (dispatch) => {
         access_token: accessToken
       }
     });
-    dispatch ({
-      type: SIGN_IN_WITH_SOCIAL,
-      payload: res.data
-    });
-    history.push('/');
+    if(res.status === 200) {
+      dispatch ({
+        type: SIGN_IN_WITH_SOCIAL,
+        payload: res.data
+      });
+      history.push('/');
+      dispatch(hideAlert("Welcome!", 'success'));
+      setTimeout(() => {
+        dispatch(hideAlert());
+      }, 3000);
+    }
   } catch(err) {
-    console.log(err);
+    dispatch(showAlert(err.response.data.message, 'error'));
+    setTimeout(() => {
+      dispatch(hideAlert());
+    }, 3000)
   }
 }
 

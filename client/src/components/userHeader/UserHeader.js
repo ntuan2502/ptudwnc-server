@@ -5,7 +5,7 @@ import { fetchUser } from '../../actions';
 function UserHeader(props) {
   useEffect(() => {
     props.fetchUser(props.userId);
-  }, [])
+  }, [props]);
 
   if(!props.user) {
     return (    
