@@ -2,8 +2,15 @@ const bcrypt = require('bcrypt');
 const authenticate = require('../authenticate');
 const User = require('../models/users.model');
 module.exports = {
-  getAllUsers: (req, res) => {
-    res.json({data: []})
+  getAllUsers: async (req, res) => {
+    const users = await User.find({});
+    if(users) {
+      res.setHeader('Content-type', 'application/json');
+      res.status(200).json(users);
+    } else {
+      res.setHeader('Content-type', 'application/json');
+      res.status(401).json({ message: 'No users found' });
+    }
   },
 
   postLogin: async (req, res) => {
