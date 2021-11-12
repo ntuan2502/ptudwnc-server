@@ -15,6 +15,9 @@ const userSchema = new Schema({
   password: {
     type: String,
   },
+  studentId : {
+    type: String,
+  },
   googleId: String,
   facebookId: String,
   type : {

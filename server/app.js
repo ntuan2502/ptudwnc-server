@@ -9,13 +9,19 @@ const passport = require('passport');
 var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users.route');
 const classRouter = require('./routes/class.route');
+const cors = require('cors');
 
+var corswithOption = {
+  origin: '*',
+  optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+}
 
 var app = express();
 
 require('./authenticate');
 require('./db');
 
+app.use(cors(corswithOption));
 app.use(passport.initialize());
 
 // view engine setup

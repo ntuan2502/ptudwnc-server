@@ -13,6 +13,8 @@ import axiosJWT from '../api/axiosJWT';
 import history from '../history';
 import _ from 'lodash';
 
+axios.defaults.baseURL = 'http://localhost:8000';
+
 export const signInWithSocial = (accessToken, url) => async (dispatch) => {
   try {
     const res = await axios.get(url, {

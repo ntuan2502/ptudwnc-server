@@ -20,11 +20,11 @@ module.exports = {
     const newClass = new Class({
       className: req.body.className,
       description: req.body.description,
-      listStudent: [],
-      teacher : req.user.id,
+      students: [],
+      teachers: [req.user.id],
+      owner : req.user.id,
       joinId : nanoid(8)
     });
-
     newClass.save()
       .then(() => {
         res.setHeader('Content-type', 'application/json');
@@ -57,11 +57,12 @@ module.exports = {
     const classId = req.params.id;
     const matchedClass = await Class.findById(classId);
     if(matchedClass) {
-      matchedClass.className = req.body.className;
-      matchedClass.description = req.body.description;
-      matchedClass.listStudent = req.body.listStudent;
-      matchedClass.teacher = req.user.id;
-      matchedClass.joinId = req.body.joinId;
+      if(req.body.className) {
+        matchedClass.className = req.body.className;
+      }
+      if(req.body.description) {
+        matchedClass.description = req.body.description;
+      }
       matchedClass.save()
         .then(() => {
           res.setHeader('Content-type', 'application/json');
@@ -100,6 +101,6 @@ module.exports = {
           message: err.message
         });
       });
-      })
+    })
   }
 }

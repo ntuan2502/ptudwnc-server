@@ -10,13 +10,11 @@ const classSchema = new Schema({
   description: {
     type: String,
   },
-  listStudents: {
-    type: Array,
-    required: true,
-  },
-  teacher: {
+  students: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  teachers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
+  owner : {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User'
+    ref: 'User',
   },
   joinId: {
     type: String,

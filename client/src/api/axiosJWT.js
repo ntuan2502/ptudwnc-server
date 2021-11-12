@@ -3,10 +3,12 @@ import store from '../myStore';
 import jwtDecode from 'jwt-decode';
 import { SIGN_OUT } from '../actions/type';
 
-const axiosJWT = axios.create();
+const axiosJWT = axios.create({
+  baseURL: 'http://localhost:8000'
+});
 
 //axiosJWT.defaults.headers.common['Authorization'] = `Bearer ${store.getState().auth.accessToken}`;
-
+//axiosJWT.baseURL = 'http://spa-classroom-1.lequocdatfit.repl.co:443';
 // approve 1
 axiosJWT.interceptors.request.use(
   (config) => {

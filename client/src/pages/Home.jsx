@@ -50,7 +50,7 @@ function Home(props) {
                 key={classItem._id}
                 preTitle={`JoinId: ${classItem.joinId}`}
                 title={classItem.className}
-                subTitle={<UserHeader userId={classItem.teacher} />}
+                subTitle={<UserHeader userId={classItem.owner} />}
                 description={classItem.description}
               />
             );
