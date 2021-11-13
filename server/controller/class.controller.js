@@ -120,4 +120,69 @@ module.exports = {
         });
     });
   },
+
+  joinClass: async (req, res, next) => {
+    const inviteId = req.params.id;
+    const userId = req.user._id;
+    const invitation = await Invitation.findOne({ inviteCode: inviteId });
+    if (!invitation) {
+      res.status(404).json({
+        status: 'error',
+        message: 'Invite not found',
+      });
+      return;
+    }
+    if (invitation.userId && invitation.userId !== userId) {
+      res.status(403).json({
+        status: 'error',
+        message: 'Unauthorized',
+      });
+      return;
+    }
+    const course = await Class.findById(invitation.courseId);
+    if (!course) {
+      res.status(404).json({
+        status: 'error',
+        message: 'Class not found',
+      });
+      return;
+    }
+    if (invitation.type === 1) {
+      if (course.students && course.students.includes(userId)) {
+        res.status(403).json({
+          status: 'error',
+          message: 'You have already joined this class',
+        });
+        return;
+      }
+      if (!course.students) {
+        course.students = [];
+      }
+      course.students.push(userId);
+    } else if (invitation.type === 0) {
+      if (course.teachers && course.teachers.includes(userId)) {
+        res.status(403).json({
+          status: 'error',
+          message: 'You have already joined this class',
+        });
+        return;
+      }
+      if (!course.teachers) {
+        course.teachers = [];
+      }
+      course.teachers.push(userId);
+    }
+    try {
+      await course.save();
+      res.status(200).json({
+        status: 'success',
+        message: 'Class joined successfully',
+      });
+    } catch (err) {
+      res.status(500).json({
+        status: 'error',
+        message: err.message,
+      });
+    }
+  },
 };
