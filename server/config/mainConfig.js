@@ -5,4 +5,8 @@ module.exports = {
   GOOGLE_CLIENT_SECRET: process.env.GOOGLE_CLIENT_SECRET,
   FACEBOOK_CLIENT_ID: process.env.FACEBOOK_CLIENT_ID,
   FACEBOOK_CLIENT_SECRET: process.env.FACEBOOK_CLIENT_SECRET,
+  email: {
+    account: process.env.EMAIL_USER,
+    password: process.env.EMAIL_PASSWORD,
+  }
 }

@@ -1,4 +1,6 @@
 const Class = require('../models/class.model');
+const nodemailer = require('nodemailer');
+const { email} = require('../config/mainConfig');
 const { nanoid } = require('nanoid');
 
 module.exports = {
@@ -11,7 +13,7 @@ module.exports = {
   },
 
   getAllClasses: async (req, res, next) => {
-    const allClass = await Class.find({})
+    const allClass = await Class.find({"$or": [{"students": req.user.id}, {"owner": req.user.id}, {"teachers": req.user.id}]});
     res.setHeader('Content-type', 'application/json');
     res.status(200).json(allClass);
   },
@@ -40,10 +42,22 @@ module.exports = {
 
   getClass: async (req, res, next) => {
     const classId = req.params.id;
-    const matchedClass = await Class.findById(classId);
+    const matchedClass = await Class.findById(classId)
+      .populate('teachers')
+      .populate('students')
+      .populate('owner');
+
     if(matchedClass) {
-      res.setHeader('Content-type', 'application/json');
-      res.status(200).json(matchedClass);
+      if(matchedClass.students.includes(req.user.id) || matchedClass.teachers.includes(req.user.id) || matchedClass.owner === req.user.id) {
+        res.setHeader('Content-type', 'application/json');
+        res.status(200).json(matchedClass);
+      } else {
+        res.setHeader('Content-type', 'application/json');
+        res.status(403).json({
+          status: 'error',
+          message: 'You are not allowed to access this class'
+        });
+      }
     } else {
       res.setHeader('Content-type', 'application/json');
       res.status(404).json({
@@ -102,5 +116,38 @@ module.exports = {
         });
       });
     })
+  },
+
+  inviteUser: async (req, res, next) => {
+    // create reusable transporter object using the default SMTP transport
+    let transporter = nodemailer.createTransport({
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false, // true for 465, false for other ports
+      auth: {
+          user: email.account, // generated ethereal user
+          pass: email.password, // generated ethereal password
+      },
+      tls: {
+          rejectUnauthorized: false,
+      },
+    });
+
+    // send mail with defined transport object
+    let info = await transporter.sendMail({
+      from: '"ClassPin" <classpinclassroom@gmail.com>', // sender address
+      to: '18120305@student.hcmus.edu.vn', // list of receivers
+      subject: 'Someone invited you to join class', // Subject line
+      text: '', // plain text body
+      html: `<h1>Hello</h1>`, // html body
+    });
+
+    console.log('Message sent: %s', info.messageId);
+    // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
+
+    // Preview only available when sending through an Ethereal account
+    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
+    res.status(200).json({ status: "success", message: "Invite success!"});
   }
 }
