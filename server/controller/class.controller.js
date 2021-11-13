@@ -70,27 +70,37 @@ module.exports = {
   updateClass: async (req, res, next) => {
     const classId = req.params.id;
     const matchedClass = await Class.findById(classId);
+
     if(matchedClass) {
-      if(req.body.className) {
-        matchedClass.className = req.body.className;
-      }
-      if(req.body.description) {
-        matchedClass.description = req.body.description;
-      }
-      matchedClass.save()
-        .then(() => {
-          res.setHeader('Content-type', 'application/json');
-          res.status(200).json({
-            status: 'success',
-            message: 'Class updated successfully'
+      // check owner
+      if(matchedClass.owner === req.user.id) {
+        if(req.body.className) {
+          matchedClass.className = req.body.className;
+        }
+        if(req.body.description) {
+          matchedClass.description = req.body.description;
+        }
+        matchedClass.save()
+          .then(() => {
+            res.setHeader('Content-type', 'application/json');
+            res.status(200).json({
+              status: 'success',
+              message: 'Class updated successfully'
+            });
+          }).catch(err => {
+            res.setHeader('Content-type', 'application/json');
+            res.status(500).json({
+              status: 'error',
+              message: err.message
+            });
           });
-        }).catch(err => {
-          res.setHeader('Content-type', 'application/json');
-          res.status(500).json({
-            status: 'error',
-            message: err.message
-          });
+      } else {
+        res.setHeader('Content-type', 'application/json');
+        res.status(403).json({
+          status: 'error',
+          message: 'You are not allowed to modify this class'
         });
+      }
     } else {
       res.setHeader('Content-type', 'application/json');
       res.status(404).json({
@@ -100,22 +110,39 @@ module.exports = {
     }
   },
 
-  deleteClass: (req, res, next) => {
+  deleteClass: async (req, res, next) => {
     const classId = req.params.id;
-    Class.findByIdAndDelete(classID)
-      .then(() => {
+    const matchedClass = await Class.findById(classId);
+    if(matchedClass) {
+      if(matchedClass.owner === req.user.id) {
+        matchedClass.remove()
+          .then(() => {
+            res.setHeader('Content-type', 'application/json');
+            res.status(200).json({
+              status: 'success',
+              message: 'Class deleted successfully'
+            });
+          }).catch(err => {
+            res.setHeader('Content-type', 'application/json');
+            res.status(500).json({
+              status: 'error',
+              message: err.message
+            });
+          });
+      } else {
         res.setHeader('Content-type', 'application/json');
-        res.status(200).json({
-          status: 'success',
-          message: 'Class deleted successfully'
-      }).catch((err) => {
-        res.setHeader('Content-type', 'application/json');
-        res.status(500).json({
+        res.status(403).json({
           status: 'error',
-          message: err.message
+          message: 'You are not allowed to delete this class'
         });
+      }
+    } else {
+      res.setHeader('Content-type', 'application/json');
+      res.status(404).json({
+        status: 'error',
+        message: 'Class not found'
       });
-    })
+    }
   },
 
   inviteUser: async (req, res, next) => {
@@ -136,10 +163,10 @@ module.exports = {
     // send mail with defined transport object
     let info = await transporter.sendMail({
       from: '"ClassPin" <classpinclassroom@gmail.com>', // sender address
-      to: '18120305@student.hcmus.edu.vn', // list of receivers
+      to: 'lequocdattyty191@gmail.com', // list of receivers
       subject: 'Someone invited you to join class', // Subject line
-      text: '', // plain text body
-      html: `<h1>Hello</h1>`, // html body
+      text: 'Hello world', // plain text body
+      html: `<p>You are invited to a class on the classpin system. Click on the link if you agree: <a href="https://google.com">Link</a></p>`, // html body
     });
 
     console.log('Message sent: %s', info.messageId);
