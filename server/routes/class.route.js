@@ -11,17 +11,15 @@ router
   .patch(authenticate.verifyUser, controller.notAllowMethod)
   .delete(authenticate.verifyUser, controller.notAllowMethod);
 
-router.route('/invite')
-  .post(authenticate.verifyUser, controller.inviteUser)
+router.route('/invite').post(authenticate.verifyUser, controller.inviteUser);
 
-router.route('/:id')
+router
+  .route('/:id')
   .get(authenticate.verifyUser, controller.getClass)
   .post(authenticate.verifyUser, controller.notAllowMethod)
   .patch(authenticate.verifyUser, controller.updateClass)
   .delete(authenticate.verifyUser, controller.deleteClass);
 
-//This hasn't working yet, don't call this route.
-//Add authorization to this route first.
-router.get('/join/:id', controller.joinClass);
+router.get('/join/:id', authenticate.verifyUser, controller.joinClass);
 
 module.exports = router;
