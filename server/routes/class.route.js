@@ -11,8 +11,10 @@ router
   .patch(authenticate.verifyUser, controller.notAllowMethod)
   .delete(authenticate.verifyUser, controller.notAllowMethod);
 
-router
-  .route('/:id')
+router.route('/invite')
+  .post(authenticate.verifyUser, controller.inviteUser)
+
+router.route('/:id')
   .get(authenticate.verifyUser, controller.getClass)
   .post(authenticate.verifyUser, controller.notAllowMethod)
   .patch(authenticate.verifyUser, controller.updateClass)
