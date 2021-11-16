@@ -1,45 +1,40 @@
 require("dotenv").config();
 require("express-async-errors");
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var logger = require("morgan");
+const createError = require("http-errors");
+const express = require("express");
+const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
 const passport = require("passport");
-var indexRouter = require("./routes/index");
-var usersRouter = require("./routes/users.route");
-const classRouter = require("./routes/class.route");
 const cors = require("cors");
+
+const app = express();
 const db = require("./config/db");
+const route = require("./routers");
+const port = 3000;
 
 db.connect();
+route(app);
+app.listen(port, () => {
+  console.log(`Example app listening at http://localhost:${port}`);
+});
 
-var corswithOption = {
+const corswithOption = {
   origin: "*",
   optionsSuccessStatus: 200, // some legacy browsers (IE11, various SmartTVs) choke on 204
 };
 
-var app = express();
 
 require("./authenticate");
-// require('./db');
 
 app.use(cors(corswithOption));
 app.use(passport.initialize());
 
-// view engine setup
-app.set("views", path.join(__dirname, "views"));
-app.set("view engine", "jade");
+app.use(morgan("dev"));
+app.use(morgan("combined"));
 
-app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-app.use(express.static(path.join(__dirname, "public")));
-
-app.use("/", indexRouter);
-app.use("/users", usersRouter);
-app.use("/classes", classRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
