@@ -1,6 +1,6 @@
 const Class = require('../models/class.model');
 const nodemailer = require('nodemailer');
-const { email} = require('../config/mainConfig');
+const { email } = require('../config/mainConfig');
 const Invitation = require('../models/invitation.model.js');
 const { nanoid } = require('nanoid');
 
@@ -23,7 +23,13 @@ module.exports = {
   },
 
   getAllClasses: async (req, res, next) => {
-    const allClass = await Class.find({"$or": [{"students": req.user.id}, {"owner": req.user.id}, {"teachers": req.user.id}]});
+    const allClass = await Class.find({
+      $or: [
+        { students: req.user.id },
+        { owner: req.user.id },
+        { teachers: req.user.id },
+      ],
+    });
     res.setHeader('Content-type', 'application/json');
     res.status(200).json(allClass);
   },
@@ -60,18 +66,21 @@ module.exports = {
       .populate('students')
       .populate('owner');
 
-    if(matchedClass) {
-      if(matchedClass.students.includes(req.user.id) || matchedClass.teachers.includes(req.user.id) || matchedClass.owner === req.user.id) {
+    if (matchedClass) {
+      if (
+        matchedClass.students.includes(req.user.id) ||
+        matchedClass.teachers.includes(req.user.id) ||
+        matchedClass.owner === req.user.id
+      ) {
         res.setHeader('Content-type', 'application/json');
         res.status(200).json(matchedClass);
       } else {
         res.setHeader('Content-type', 'application/json');
         res.status(403).json({
           status: 'error',
-          message: 'You are not allowed to access this class'
+          message: 'You are not allowed to access this class',
         });
       }
-
     } else {
       res.setHeader('Content-type', 'application/json');
       res.status(404).json({
@@ -84,34 +93,36 @@ module.exports = {
   updateClass: async (req, res, next) => {
     const classId = req.params.id;
     const matchedClass = await Class.findById(classId);
-    if(matchedClass) {
+    if (matchedClass) {
       // check owner
-      if(matchedClass.owner === req.user.id) {
-        if(req.body.className) {
+      if (matchedClass.owner === req.user.id) {
+        if (req.body.className) {
           matchedClass.className = req.body.className;
         }
-        if(req.body.description) {
+        if (req.body.description) {
           matchedClass.description = req.body.description;
         }
-        matchedClass.save()
+        matchedClass
+          .save()
           .then(() => {
             res.setHeader('Content-type', 'application/json');
             res.status(200).json({
               status: 'success',
-              message: 'Class updated successfully'
+              message: 'Class updated successfully',
             });
-          }).catch(err => {
+          })
+          .catch((err) => {
             res.setHeader('Content-type', 'application/json');
             res.status(500).json({
               status: 'error',
-              message: err.message
+              message: err.message,
             });
           });
       } else {
         res.setHeader('Content-type', 'application/json');
         res.status(403).json({
           status: 'error',
-          message: 'You are not allowed to modify this class'
+          message: 'You are not allowed to modify this class',
         });
       }
     } else {
@@ -126,34 +137,36 @@ module.exports = {
   deleteClass: async (req, res, next) => {
     const classId = req.params.id;
     const matchedClass = await Class.findById(classId);
-    if(matchedClass) {
-      if(matchedClass.owner === req.user.id) {
-        matchedClass.remove()
+    if (matchedClass) {
+      if (matchedClass.owner === req.user.id) {
+        matchedClass
+          .remove()
           .then(() => {
             res.setHeader('Content-type', 'application/json');
             res.status(200).json({
               status: 'success',
-              message: 'Class deleted successfully'
+              message: 'Class deleted successfully',
             });
-          }).catch(err => {
+          })
+          .catch((err) => {
             res.setHeader('Content-type', 'application/json');
             res.status(500).json({
               status: 'error',
-              message: err.message
+              message: err.message,
             });
           });
       } else {
         res.setHeader('Content-type', 'application/json');
         res.status(403).json({
           status: 'error',
-          message: 'You are not allowed to delete this class'
+          message: 'You are not allowed to delete this class',
         });
       }
     } else {
       res.setHeader('Content-type', 'application/json');
       res.status(404).json({
         status: 'error',
-        message: 'Class not found'
+        message: 'Class not found',
       });
     }
   },
@@ -165,11 +178,11 @@ module.exports = {
       port: 587,
       secure: false, // true for 465, false for other ports
       auth: {
-          user: email.account, // generated ethereal user
-          pass: email.password, // generated ethereal password
+        user: email.account, // generated ethereal user
+        pass: email.password, // generated ethereal password
       },
       tls: {
-          rejectUnauthorized: false,
+        rejectUnauthorized: false,
       },
     });
 
@@ -188,9 +201,39 @@ module.exports = {
     // Preview only available when sending through an Ethereal account
     console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
     // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
-    res.status(200).json({ status: "success", message: "Invite success!"});
+    res.status(200).json({ status: 'success', message: 'Invite success!' });
   },
-  
+
+  getDefaultInvitation: async (req, res, next) => {
+    const classId = req.params.id;
+    const matchedClass = await Class.findOne({
+      _id: classId,
+      teachers: req.user.id,
+    });
+    if (matchedClass) {
+      const invitation = await Invitation.findOne({
+        classId: matchedClass._id,
+        userId: null,
+      });
+      if (invitation) {
+        res.setHeader('Content-type', 'application/json');
+        res.status(200).json(invitation);
+      } else {
+        res.setHeader('Content-type', 'application/json');
+        res.status(404).json({
+          status: 'error',
+          message: 'Invitation not found',
+        });
+      }
+    } else {
+      res.setHeader('Content-type', 'application/json');
+      res.status(404).json({
+        status: 'error',
+        message: 'Class not found',
+      });
+    }
+  },
+
   joinClass: async (req, res, next) => {
     const inviteId = req.params.id;
     const userId = req.user._id;

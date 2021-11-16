@@ -20,6 +20,12 @@ router
   .patch(authenticate.verifyUser, controller.updateClass)
   .delete(authenticate.verifyUser, controller.deleteClass);
 
+router.get(
+  '/:id/invitation',
+  authenticate.verifyUser,
+  controller.getDefaultInvitation
+);
+
 router.get('/join/:id', authenticate.verifyUser, controller.joinClass);
 
 module.exports = router;

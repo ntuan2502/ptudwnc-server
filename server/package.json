@@ -19,6 +19,7 @@
     "mongoose": "^6.0.12",
     "morgan": "~1.9.0",
     "nanoid": "^3.1.30",
+    "nodemailer": "^6.7.1",
     "passport": "^0.5.0",
     "passport-facebook-token": "^4.0.0",
     "passport-google-token": "^0.1.2",
