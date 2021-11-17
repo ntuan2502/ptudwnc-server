@@ -15,7 +15,7 @@ module.exports = {
           res.setHeader("Content-Type", "application/json");
           res
             .status(200)
-            .json({ success: true, currentUser: user, accessToken: token });
+            .json({ success: true, user: user, token: token });
         } else {
           console.log("password dont");
           res.setHeader("Content-Type", "application/json");
