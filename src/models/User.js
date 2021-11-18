@@ -18,7 +18,6 @@ const User = new Schema(
     },
     student: {
       type: String,
-      unique: true,
     },
     googleId: {
       type: String,

@@ -39,7 +39,6 @@ module.exports = {
         success: false,
         message: "The user already exists!",
       });
-      log;
     } else {
       const newUser = new User(req.body);
       newUser.password = bcrypt.hashSync(req.body.password, 10);
