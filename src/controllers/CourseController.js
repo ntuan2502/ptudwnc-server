@@ -14,13 +14,13 @@ const createDefaultInvitation = (courseId) => {
 };
 
 module.exports = {
-  notAllowMethod: (req, res, next) => {
-    res.json({
-      code: res.statusCode,
-      status: false,
-      message: "The method is not allowed",
-    });
-  },
+  // notAllowMethod: (req, res, next) => {
+  //   res.json({
+  //     code: res.statusCode,
+  //     status: false,
+  //     message: "The method is not allowed",
+  //   });
+  // },
 
   // [GET] /courses
   getCourses: async (req, res, next) => {
@@ -31,10 +31,10 @@ module.exports = {
         { teachers: req.user.id },
       ],
     });
-
     res.json({ code: res.statusCode, success: true, allCourse });
   },
 
+  // [POST] /courses/store
   createCourse: async (req, res, next) => {
     const newCourse = new Course({
       name: req.body.name,
@@ -60,9 +60,9 @@ module.exports = {
       });
   },
 
+  // [GET] /courses/:slug
   getCourse: async (req, res, next) => {
-    const courseId = req.params.id;
-    const matchedCourse = await Course.findById(courseId)
+    const matchedCourse = await Course.findOne({ slug: req.params.slug })
       .populate("teachers")
       .populate("students")
       .populate("owner");
@@ -90,6 +90,7 @@ module.exports = {
     }
   },
 
+  // [PUT] /courses/:id
   updateCourse: async (req, res, next) => {
     const courseId = req.params.id;
     const matchedCourse = await Course.findById(courseId);
@@ -134,6 +135,7 @@ module.exports = {
     }
   },
 
+  // [DELETE] /courses/:id
   deleteCourse: async (req, res, next) => {
     const courseId = req.params.id;
     const matchedCourse = await Course.findById(courseId);

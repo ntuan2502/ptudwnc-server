@@ -1,35 +1,43 @@
 const bcrypt = require("bcrypt");
 const authenticate = require("../authenticate");
 const User = require("../models/User");
-const {
-  multipleMongooseToObject,
-  mongooseToObject,
-} = require("../util/mongoose");
 
 class UserController {
   // [GET] /users
   index(req, res, next) {
     User.find({})
-      .then((course) => {
-        res.json({ course: multipleMongooseToObject(course) });
+      .then((users) => {
+        res.json({
+          code: res.statusCode,
+          success: true,
+          users,
+        });
       })
       .catch(next);
   }
 
-  // [GET] /courses/:slug
+  // [GET] /user/:id
   show(req, res, next) {
-    Course.findById(req.params.id)
-      .then((course) => {
-        res.json({ course: mongooseToObject(course) });
+    User.findById(req.params.id)
+      .then((user) => {
+        res.json({
+          code: res.statusCode,
+          success: true,
+          user,
+        });
       })
       .catch(next);
   }
 
-  // [PUT] /courses/:id
+  // [PUT] /user/:id
   update(req, res, next) {
-    Course.updateOne({ _id: req.params.id }, req.body)
-      .then((course) => {
-        res.json({ course: mongooseToObject(course) });
+    User.updateOne({ _id: req.params.id }, req.body)
+      .then((user) => {
+        res.json({
+          code: res.statusCode,
+          success: true,
+          user,
+        });
       })
       .catch(next);
   }

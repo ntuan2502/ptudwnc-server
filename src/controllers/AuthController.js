@@ -1,10 +1,6 @@
 const bcrypt = require("bcrypt");
 const authenticate = require("../authenticate");
 const User = require("../models/User");
-const {
-  multipleMongooseToObject,
-  mongooseToObject,
-} = require("../util/mongoose");
 
 module.exports = {
   // [POST] /auth/login
@@ -20,7 +16,7 @@ module.exports = {
       res.json({
         code: res.statusCode,
         success: true,
-        user: mongooseToObject(user),
+        user,
         token,
       });
       // console.log("Logged in successfully");

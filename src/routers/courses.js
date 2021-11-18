@@ -5,15 +5,11 @@ const courseController = require("../controllers/CourseController");
 const router = express.Router();
 
 router
-  .route("/")
-  .get(authenticate.verifyUser, courseController.getCourses)
-  .post(authenticate.verifyUser, courseController.createCourse);
-
-router
-  .route("/:id")
-  .get(authenticate.verifyUser, courseController.getCourse)
-  .patch(authenticate.verifyUser, courseController.updateCourse)
-  .delete(authenticate.verifyUser, courseController.deleteCourse);
+  .post("/store", authenticate.verifyUser, courseController.createCourse)
+  .get("/:slug/edit", authenticate.verifyUser, courseController.getCourse)
+  .put("/:id", authenticate.verifyUser, courseController.updateCourse)
+  .delete("/:id", authenticate.verifyUser, courseController.deleteCourse)
+  .get("/", authenticate.verifyUser, courseController.getCourses);
 
 router.get("/join/:id", authenticate.verifyUser, courseController.joinCourse);
 
