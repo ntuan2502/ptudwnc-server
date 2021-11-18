@@ -52,7 +52,7 @@ module.exports = {
     }
   },
 
-  // [get] /auth/:provider/token
+  // [GET] /auth/:provider/token
   socialLogin: (req, res) => {
     if (req.user) {
       const token = authenticate.getToken(req.user);

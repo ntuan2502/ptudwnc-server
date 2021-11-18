@@ -8,19 +8,24 @@ const User = new Schema(
     email: {
       type: String,
       required: true,
-    },
-    fullName: {
-      type: String,
-      required: true,
+      unique: true,
     },
     password: {
       type: String,
     },
-    studentId: {
+    name: {
       type: String,
     },
-    googleId: String,
-    facebookId: String,
+    student: {
+      type: String,
+      unique: true,
+    },
+    googleId: {
+      type: String,
+    },
+    facebookId: {
+      type: String,
+    },
     type: {
       type: Number,
       default: 1, // 0: Admin | 1: User
