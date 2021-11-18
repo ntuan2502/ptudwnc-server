@@ -1,12 +1,12 @@
-const Class = require('../models/Course');
-const nodemailer = require('nodemailer');
-const { email } = require('../config/mainConfig');
-const Invitation = require('../models/Invitation.js');
-const { nanoid } = require('nanoid');
+const Course = require("../models/Course");
+const nodemailer = require("nodemailer");
+const { email } = require("../config/mainConfig");
+const Invitation = require("../models/Invitation.js");
+const { nanoid } = require("nanoid");
 
 const createDefaultInvitation = (courseId) => {
   const newInvitation = new Invitation({
-    courseId: courseId,
+    courseId,
     inviteCode: nanoid(8),
     type: 1,
   });
@@ -15,158 +15,158 @@ const createDefaultInvitation = (courseId) => {
 
 module.exports = {
   notAllowMethod: (req, res, next) => {
-    res.setHeader('Content-type', 'application/json');
-    res.status(402).json({
-      status: 'error',
-      message: 'The method is not allowed',
+    res.json({
+      code: res.statusCode,
+      status: false,
+      message: "The method is not allowed",
     });
   },
 
-  getAllClasses: async (req, res, next) => {
-    const allClass = await Class.find({
+  // [GET] /courses
+  getCourses: async (req, res, next) => {
+    const allCourse = await Course.find({
       $or: [
         { students: req.user.id },
         { owner: req.user.id },
         { teachers: req.user.id },
       ],
     });
-    res.setHeader('Content-type', 'application/json');
-    res.status(200).json(allClass);
+
+    res.json({ code: res.statusCode, success: true, allCourse });
   },
 
-  createClass: async (req, res, next) => {
-    const newClass = new Class({
-      className: req.body.className,
+  createCourse: async (req, res, next) => {
+    const newCourse = new Course({
+      name: req.body.name,
       description: req.body.description,
       students: [],
       teachers: [req.user.id],
       owner: req.user.id,
       joinId: nanoid(8),
     });
-    newClass
+    newCourse
       .save()
       .then(async () => {
-        await createDefaultInvitation(newClass._id);
-        res.setHeader('Content-type', 'application/json');
-        res.status(201).json(newClass);
+        await createDefaultInvitation(newCourse._id);
+
+        res.json({ code: res.statusCode, success: true, newCourse });
       })
       .catch((err) => {
-        res.setHeader('Content-type', 'application/json');
-        res.status(500).json({
-          status: 'error',
+        res.json({
+          code: res.statusCode,
+          success: false,
           message: err.message,
         });
       });
   },
 
-  getClass: async (req, res, next) => {
-    const classId = req.params.id;
-    const matchedClass = await Class.findById(classId)
-      .populate('teachers')
-      .populate('students')
-      .populate('owner');
+  getCourse: async (req, res, next) => {
+    const courseId = req.params.id;
+    const matchedCourse = await Course.findById(courseId)
+      .populate("teachers")
+      .populate("students")
+      .populate("owner");
 
-    if (matchedClass) {
+    if (matchedCourse) {
       if (
-        matchedClass.students.includes(req.user.id) ||
-        matchedClass.teachers.includes(req.user.id) ||
-        matchedClass.owner === req.user.id
+        matchedCourse.students.includes(req.user.id) ||
+        matchedCourse.teachers.includes(req.user.id) ||
+        matchedCourse.owner === req.user.id
       ) {
-        res.setHeader('Content-type', 'application/json');
-        res.status(200).json(matchedClass);
+        res.json({ code: res.statusCode, success: true, matchedCourse });
       } else {
-        res.setHeader('Content-type', 'application/json');
-        res.status(403).json({
-          status: 'error',
-          message: 'You are not allowed to access this class',
+        res.json({
+          code: res.statusCode,
+          success: false,
+          message: "You are not allowed to access this course",
         });
       }
     } else {
-      res.setHeader('Content-type', 'application/json');
-      res.status(404).json({
-        status: 'error',
-        message: 'Class not found',
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: "Course not found",
       });
     }
   },
 
-  updateClass: async (req, res, next) => {
-    const classId = req.params.id;
-    const matchedClass = await Class.findById(classId);
-    if (matchedClass) {
+  updateCourse: async (req, res, next) => {
+    const courseId = req.params.id;
+    const matchedCourse = await Course.findById(courseId);
+    if (matchedCourse) {
       // check owner
-      if (matchedClass.owner === req.user.id) {
-        if (req.body.className) {
-          matchedClass.className = req.body.className;
+      if (matchedCourse.owner === req.user.id) {
+        if (req.body.name) {
+          matchedCourse.name = req.body.name;
         }
         if (req.body.description) {
-          matchedClass.description = req.body.description;
+          matchedCourse.description = req.body.description;
         }
-        matchedClass
+        matchedCourse
           .save()
           .then(() => {
-            res.setHeader('Content-type', 'application/json');
-            res.status(200).json({
-              status: 'success',
-              message: 'Class updated successfully',
+            res.json({
+              code: res.statusCode,
+              success: true,
+              message: "Course updated successfully",
             });
           })
           .catch((err) => {
-            res.setHeader('Content-type', 'application/json');
-            res.status(500).json({
-              status: 'error',
+            res.json({
+              code: res.statusCode,
+              success: false,
               message: err.message,
             });
           });
       } else {
-        res.setHeader('Content-type', 'application/json');
-        res.status(403).json({
-          status: 'error',
-          message: 'You are not allowed to modify this class',
+        res.json({
+          code: res.statusCode,
+          success: false,
+          message: "You are not allowed to modify this course",
         });
       }
     } else {
-      res.setHeader('Content-type', 'application/json');
-      res.status(404).json({
-        status: 'error',
-        message: 'Class not found',
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: "Course not found",
       });
     }
   },
 
-  deleteClass: async (req, res, next) => {
-    const classId = req.params.id;
-    const matchedClass = await Class.findById(classId);
-    if (matchedClass) {
-      if (matchedClass.owner === req.user.id) {
-        matchedClass
+  deleteCourse: async (req, res, next) => {
+    const courseId = req.params.id;
+    const matchedCourse = await Course.findById(courseId);
+    if (matchedCourse) {
+      if (matchedCourse.owner === req.user.id) {
+        matchedCourse
           .remove()
           .then(() => {
-            res.setHeader('Content-type', 'application/json');
-            res.status(200).json({
-              status: 'success',
-              message: 'Class deleted successfully',
+            res.json({
+              code: res.statusCode,
+              success: true,
+              message: "Course deleted successfully",
             });
           })
           .catch((err) => {
-            res.setHeader('Content-type', 'application/json');
-            res.status(500).json({
-              status: 'error',
+            res.json({
+              code: res.statusCode,
+              success: false,
               message: err.message,
             });
           });
       } else {
-        res.setHeader('Content-type', 'application/json');
-        res.status(403).json({
-          status: 'error',
-          message: 'You are not allowed to delete this class',
+        res.json({
+          code: res.statusCode,
+          success: false,
+          message: "You are not allowed to delete this course",
         });
       }
     } else {
-      res.setHeader('Content-type', 'application/json');
-      res.status(404).json({
-        status: 'error',
-        message: 'Class not found',
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: "Course not found",
       });
     }
   },
@@ -174,7 +174,7 @@ module.exports = {
   inviteUser: async (req, res, next) => {
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
-      host: 'smtp.gmail.com',
+      host: "smtp.gmail.com",
       port: 587,
       secure: false, // true for 465, false for other ports
       auth: {
@@ -188,67 +188,75 @@ module.exports = {
 
     // send mail with defined transport object
     let info = await transporter.sendMail({
-      from: '"ClassPin" <classpinclassroom@gmail.com>', // sender address
-      to: 'lequocdattyty191@gmail.com', // list of receivers
-      subject: 'Someone invited you to join class', // Subject line
-      text: 'Hello world', // plain text body
-      html: `<p>You are invited to a class on the classpin system. Click on the link if you agree: <a href="https://google.com">Link</a></p>`, // html body
+      from: '"CoursePin" <coursepincourseroom@gmail.com>', // sender address
+      to: "lequocdattyty191@gmail.com", // list of receivers
+      subject: "Someone invited you to join course", // Subject line
+      text: "Hello world", // plain text body
+      html: `<p>You are invited to a course on the coursepin system. Click on the link if you agree: <a href="https://google.com">Link</a></p>`, // html body
     });
 
-    console.log('Message sent: %s', info.messageId);
+    console.log("Message sent: %s", info.messageId);
     // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 
     // Preview only available when sending through an Ethereal account
-    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
+    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
     // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
-    res.status(200).json({ status: 'success', message: 'Invite success!' });
+    res.json({
+      code: res.statusCode,
+      success: true,
+      message: "Invite success!",
+    });
   },
 
   getDefaultInvitation: async (req, res, next) => {
-    const classId = req.params.id;
-    const matchedClass = await Class.findOne({
-      _id: classId,
+    const courseId = req.params.id;
+    const matchedCourse = await Course.findOne({
+      _id: courseId,
       teachers: req.user.id,
     });
-    if (matchedClass) {
+    if (matchedCourse) {
       const invitation = await Invitation.findOne({
-        classId: matchedClass._id,
+        courseId: matchedCourse._id,
         userId: null,
       });
       if (invitation) {
-        res.setHeader('Content-type', 'application/json');
-        res.status(200).json(invitation);
+        res.json({ code: res.statusCode, success: true, invitation });
       } else {
-        res.setHeader('Content-type', 'application/json');
-        res.status(404).json({
-          status: 'error',
-          message: 'Invitation not found',
+        res.json({
+          code: res.statusCode,
+          success: false,
+          message: "Invitation not found",
         });
       }
     } else {
-      res.setHeader('Content-type', 'application/json');
-      res.status(404).json({
-        status: 'error',
-        message: 'Class not found',
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: "Course not found",
       });
     }
   },
 
   createInvitation: async (req, res) => {
-    const classId = req.params.id;
+    const courseId = req.params.id;
     const { type, userId } = req.body;
-    if (!type || (type !== '1' && type !== '0') || !userId) {
-      res.status(400).json({
-        status: 'error',
-        message: 'Not enough inputs',
+    if (!type || (type !== "1" && type !== "0") || !userId) {
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: "Not enough inputs",
       });
       return;
     }
-    const course = await Class.findOne({ _id: classId, teacher: req.user._id });
+    const course = await Course.findOne({
+      _id: courseId,
+      teacher: req.user._id,
+    });
     if (!course) {
-      res.status(404).json({
-        status: 'error',
-        message: 'Class not found',
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: "Course not found",
       });
       return;
     }
@@ -260,54 +268,59 @@ module.exports = {
       await Invitation.deleteMany({ userId, type: Number.parseInt(type) });
     }
     const newInvitation = new Invitation({
-      courseId: classId,
+      courseId,
       inviteCode: nanoid(8),
-      userId: userId,
+      userId,
       type: Number.parseInt(type),
     });
     try {
       await newInvitation.save();
-      res.status(201).json(newInvitation);
+      res.json({ code: res.statusCode, success: true, newInvitation });
     } catch (err) {
       console.error(err);
-      res.status(500).json({
-        status: 'error',
+      res.json({
+        code: res.statusCode,
+        success: false,
         message: err.message,
       });
     }
   },
 
-  joinClass: async (req, res, next) => {
+  joinCourse: async (req, res, next) => {
     const inviteId = req.params.id;
     const userId = req.user._id;
     const invitation = await Invitation.findOne({ inviteCode: inviteId });
     if (!invitation) {
-      res.status(404).json({
-        status: 'error',
-        message: 'Invite not found',
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: "Invite not found",
       });
       return;
     }
     if (invitation.userId && invitation.userId !== userId) {
-      res.status(403).json({
-        status: 'error',
-        message: 'Unauthorized',
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: "Unauthorized",
       });
       return;
     }
-    const course = await Class.findById(invitation.courseId);
+    const course = await Course.findById(invitation.courseId);
     if (!course) {
-      res.status(404).json({
-        status: 'error',
-        message: 'Class not found',
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: "Course not found",
       });
       return;
     }
     if (invitation.type === 1) {
       if (course.students && course.students.includes(userId)) {
-        res.status(403).json({
-          status: 'error',
-          message: 'You have already joined this class',
+        res.json({
+          code: res.statusCode,
+          success: false,
+          message: "You have already joined this course",
         });
         return;
       }
@@ -317,9 +330,10 @@ module.exports = {
       course.students.push(userId);
     } else if (invitation.type === 0) {
       if (course.teachers && course.teachers.includes(userId)) {
-        res.status(403).json({
-          status: 'error',
-          message: 'You have already joined this class',
+        res.json({
+          code: res.statusCode,
+          success: false,
+          message: "You have already joined this course",
         });
         return;
       }
@@ -330,13 +344,15 @@ module.exports = {
     }
     try {
       await course.save();
-      res.status(200).json({
-        status: 'success',
-        message: 'Class joined successfully',
+      res.json({
+        code: res.statusCode,
+        success: true,
+        message: "Course joined successfully",
       });
     } catch (err) {
-      res.status(500).json({
-        status: 'error',
+      res.json({
+        code: res.statusCode,
+        success: false,
         message: err.message,
       });
     }

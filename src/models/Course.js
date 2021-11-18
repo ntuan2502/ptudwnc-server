@@ -7,11 +7,11 @@ mongoose.plugin(slug);
 
 const Course = new Schema(
   {
-    className: {
+    name: {
       type: String,
       required: true,
     },
-    slug: { type: String, slug: "className", unique: true },
+    slug: { type: String, slug: "name", unique: true },
     description: {
       type: String,
     },

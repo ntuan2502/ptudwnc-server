@@ -1,29 +1,27 @@
-const authenticate = require('../authenticate');
-const express = require('express');
-const courseController = require('../controllers/CourseController');
+const authenticate = require("../authenticate");
+const express = require("express");
+const courseController = require("../controllers/CourseController");
 
 const router = express.Router();
 
 router
-  .route('/')
-  .get(authenticate.verifyUser, courseController.getAllClasses)
-  .post(authenticate.verifyUser, courseController.createClass)
-  .patch(authenticate.verifyUser, courseController.notAllowMethod)
-  .delete(authenticate.verifyUser, courseController.notAllowMethod);
+  .route("/")
+  .get(authenticate.verifyUser, courseController.getCourses)
+  .post(authenticate.verifyUser, courseController.createCourse);
 
 router
-  .route('/invite')
+  .route("/:id")
+  .get(authenticate.verifyUser, courseController.getCourse)
+  .patch(authenticate.verifyUser, courseController.updateCourse)
+  .delete(authenticate.verifyUser, courseController.deleteCourse);
+
+router.get("/join/:id", authenticate.verifyUser, courseController.joinCourse);
+
+router
+  .route("/invite")
   .post(authenticate.verifyUser, courseController.inviteUser);
-
-router
-  .route('/:id')
-  .get(authenticate.verifyUser, courseController.getClass)
-  .post(authenticate.verifyUser, courseController.notAllowMethod)
-  .patch(authenticate.verifyUser, courseController.updateClass)
-  .delete(authenticate.verifyUser, courseController.deleteClass);
-
 router.get(
-  '/:id/invitation',
+  "/:id/invitation",
   authenticate.verifyUser,
   courseController.getDefaultInvitation
 );
@@ -35,11 +33,9 @@ router.get(
  * }
  */
 router.post(
-  '/:id/invitation',
+  "/:id/invitation",
   authenticate.verifyUser,
   courseController.createInvitation
 );
-
-router.get('/join/:id', authenticate.verifyUser, courseController.joinClass);
 
 module.exports = router;

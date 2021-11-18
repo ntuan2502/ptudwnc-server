@@ -1,64 +1,77 @@
 const bcrypt = require("bcrypt");
 const authenticate = require("../authenticate");
 const User = require("../models/User");
+const {
+  multipleMongooseToObject,
+  mongooseToObject,
+} = require("../util/mongoose");
+
 module.exports = {
+  // [POST] /auth/login
   postLogin: async (req, res) => {
-    console.log(req.body);
-    const { email, password } = req.body;
-    const user = await User.findOne({ email: email });
+    // console.log(req.body);
+    const user = await User.findOne({ email: req.body.email });
     console.log(user);
-    if (user) {
-      bcrypt.compare(password, user.password).then((result) => {
-        if (result) {
-          console.log("password match");
-          const token = authenticate.getToken(user);
-          res.setHeader("Content-Type", "application/json");
-          res
-            .status(200)
-            .json({ success: true, user: user, token: token });
-        } else {
-          console.log("password dont");
-          res.setHeader("Content-Type", "application/json");
-          res
-            .status(401)
-            .json({ success: false, message: "User or password incorrect!" });
-        }
+    if (
+      user &&
+      (await bcrypt.compare(req.body.password, user ? user.password : ""))
+    ) {
+      const token = authenticate.getToken(user);
+      res.json({
+        code: res.statusCode,
+        success: true,
+        user: mongooseToObject(user),
+        token,
       });
+      // console.log("Logged in successfully");
     } else {
-      console.log("password dont");
-      res.setHeader("Content-Type", "application/json");
-      res
-        .status(401)
-        .json({ success: false, message: "User or password incorrect!" });
+      // console.log("Email does not exist");
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: "Incorrect email or password",
+      });
     }
   },
 
+  // [POST] /auth/register
   postRegister: async (req, res) => {
     const user = await User.findOne({ email: req.body.email });
     if (user) {
-      res.setHeader("Content-Type", "application/json");
-      res
-        .status(406)
-        .json({ success: false, message: "User already existed!" });
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: "The user already exists!",
+      });
+      log;
     } else {
       const newUser = new User(req.body);
       newUser.password = bcrypt.hashSync(req.body.password, 10);
       await newUser.save();
-      res.setHeader("Content-Type", "application/json");
-      res.status(200).json({ success: true, message: "Signup successful" });
+      res.json({
+        code: res.statusCode,
+        success: true,
+        message: "Successful account registration",
+      });
     }
   },
 
+  // [get] /auth/:provider/token
   socialLogin: (req, res) => {
     if (req.user) {
       const token = authenticate.getToken(req.user);
-      res.setHeader("Content-type", "application/json");
-      res
-        .status(200)
-        .json({ success: true, currentUser: req.user, accessToken: token });
+      res.json({
+        code: res.statusCode,
+        success: true,
+        user: req.user,
+        token,
+      });
     } else {
-      res.setHeader("Content-type", "application/json");
-      res.status(401).json({ success: false, message: "Unauthorized" });
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: "Unauthorized",
+      });
     }
   },
 };
