@@ -16,7 +16,7 @@ class UserController {
       .catch(next);
   }
 
-  // [GET] /user/:id
+  // [GET] /users/:id
   show(req, res, next) {
     User.findById(req.params.id)
       .then((user) => {
@@ -29,9 +29,22 @@ class UserController {
       .catch(next);
   }
 
-  // [PUT] /user/:id
+  // [PUT] /users/:id
   update(req, res, next) {
     User.updateOne({ _id: req.params.id }, req.body)
+      .then((user) => {
+        res.json({
+          code: res.statusCode,
+          success: true,
+          user,
+        });
+      })
+      .catch(next);
+  }
+
+  // [GET] /users/student/:student
+  checkStudent(req, res, next) {
+    User.findOne({ student: req.params.student })
       .then((user) => {
         res.json({
           code: res.statusCode,

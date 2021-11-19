@@ -12,12 +12,12 @@ module.exports = {
       user &&
       (await bcrypt.compare(req.body.password, user ? user.password : ""))
     ) {
-      const token = authenticate.getToken(user);
+      const jwt = authenticate.getToken(user);
       res.json({
         code: res.statusCode,
         success: true,
         user,
-        token,
+        jwt,
       });
       // console.log("Logged in successfully");
     } else {
@@ -54,12 +54,12 @@ module.exports = {
   // [GET] /auth/:provider/token
   socialLogin: (req, res) => {
     if (req.user) {
-      const token = authenticate.getToken(req.user);
+      const jwt = authenticate.getToken(req.user);
       res.json({
         code: res.statusCode,
         success: true,
         user: req.user,
-        token,
+        jwt,
       });
     } else {
       res.json({
