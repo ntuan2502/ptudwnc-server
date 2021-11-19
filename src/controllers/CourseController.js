@@ -69,9 +69,9 @@ module.exports = {
 
     if (course) {
       if (
-        course.students.includes(req.user.id) ||
-        course.teachers.includes(req.user.id) ||
-        course.owner === req.user.id
+        course.students.toString().includes(req.user.id) ||
+        course.teachers.toString().includes(req.user.id) ||
+        course.owner.id === req.user.id
       ) {
         res.json({ code: res.statusCode, success: true, course });
       } else {

@@ -6,7 +6,7 @@ const router = express.Router();
 
 router
   .post("/store", authenticate.verifyUser, courseController.createCourse)
-  .get("/:slug/edit", authenticate.verifyUser, courseController.getCourse)
+  .get("/:slug", authenticate.verifyUser, courseController.getCourse)
   .put("/:id", authenticate.verifyUser, courseController.updateCourse)
   .delete("/:id", authenticate.verifyUser, courseController.deleteCourse)
   .get("/", authenticate.verifyUser, courseController.getCourses);
