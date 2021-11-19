@@ -24,19 +24,19 @@ module.exports = {
 
   // [GET] /courses
   getCourses: async (req, res, next) => {
-    const allCourse = await Course.find({
+    const courses = await Course.find({
       $or: [
         { students: req.user.id },
         { owner: req.user.id },
         { teachers: req.user.id },
       ],
     });
-    res.json({ code: res.statusCode, success: true, allCourse });
+    res.json({ code: res.statusCode, success: true, courses });
   },
 
   // [POST] /courses/store
   createCourse: async (req, res, next) => {
-    const newCourse = new Course({
+    const course = new Course({
       name: req.body.name,
       description: req.body.description,
       students: [],
@@ -44,12 +44,12 @@ module.exports = {
       owner: req.user.id,
       joinId: nanoid(8),
     });
-    newCourse
+    course
       .save()
       .then(async () => {
-        await createDefaultInvitation(newCourse._id);
+        await createDefaultInvitation(course._id);
 
-        res.json({ code: res.statusCode, success: true, newCourse });
+        res.json({ code: res.statusCode, success: true, course });
       })
       .catch((err) => {
         res.json({
@@ -62,18 +62,18 @@ module.exports = {
 
   // [GET] /courses/:slug
   getCourse: async (req, res, next) => {
-    const matchedCourse = await Course.findOne({ slug: req.params.slug })
+    const course = await Course.findOne({ slug: req.params.slug })
       .populate("teachers")
       .populate("students")
       .populate("owner");
 
-    if (matchedCourse) {
+    if (course) {
       if (
-        matchedCourse.students.includes(req.user.id) ||
-        matchedCourse.teachers.includes(req.user.id) ||
-        matchedCourse.owner === req.user.id
+        course.students.includes(req.user.id) ||
+        course.teachers.includes(req.user.id) ||
+        course.owner === req.user.id
       ) {
-        res.json({ code: res.statusCode, success: true, matchedCourse });
+        res.json({ code: res.statusCode, success: true, course });
       } else {
         res.json({
           code: res.statusCode,
@@ -92,18 +92,17 @@ module.exports = {
 
   // [PUT] /courses/:id
   updateCourse: async (req, res, next) => {
-    const courseId = req.params.id;
-    const matchedCourse = await Course.findById(courseId);
-    if (matchedCourse) {
+    const course = await Course.findById(req.params.id);
+    if (course) {
       // check owner
-      if (matchedCourse.owner === req.user.id) {
+      if (course.owner === req.user.id) {
         if (req.body.name) {
-          matchedCourse.name = req.body.name;
+          course.name = req.body.name;
         }
         if (req.body.description) {
-          matchedCourse.description = req.body.description;
+          course.description = req.body.description;
         }
-        matchedCourse
+        course
           .save()
           .then(() => {
             res.json({
@@ -137,11 +136,10 @@ module.exports = {
 
   // [DELETE] /courses/:id
   deleteCourse: async (req, res, next) => {
-    const courseId = req.params.id;
-    const matchedCourse = await Course.findById(courseId);
-    if (matchedCourse) {
-      if (matchedCourse.owner === req.user.id) {
-        matchedCourse
+    const course = await Course.findById(req.params.id);
+    if (course) {
+      if (course.owner === req.user.id) {
+        course
           .remove()
           .then(() => {
             res.json({
@@ -211,14 +209,13 @@ module.exports = {
   },
 
   getDefaultInvitation: async (req, res, next) => {
-    const courseId = req.params.id;
-    const matchedCourse = await Course.findOne({
-      _id: courseId,
+    const course = await Course.findOne({
+      _id: req.params.id,
       teachers: req.user.id,
     });
-    if (matchedCourse) {
+    if (course) {
       const invitation = await Invitation.findOne({
-        courseId: matchedCourse._id,
+        courseId: course._id,
         userId: null,
       });
       if (invitation) {
@@ -240,7 +237,6 @@ module.exports = {
   },
 
   createInvitation: async (req, res) => {
-    const courseId = req.params.id;
     const { type, userId } = req.body;
     if (!type || (type !== "1" && type !== "0") || !userId) {
       res.json({
@@ -251,7 +247,7 @@ module.exports = {
       return;
     }
     const course = await Course.findOne({
-      _id: courseId,
+      _id: req.params.id,
       teacher: req.user._id,
     });
     if (!course) {
@@ -289,9 +285,8 @@ module.exports = {
   },
 
   joinCourse: async (req, res, next) => {
-    const inviteId = req.params.id;
     const userId = req.user._id;
-    const invitation = await Invitation.findOne({ inviteCode: inviteId });
+    const invitation = await Invitation.findOne({ inviteCode: req.params.id });
     if (!invitation) {
       res.json({
         code: res.statusCode,
