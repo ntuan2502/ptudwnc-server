@@ -30,7 +30,7 @@ module.exports = {
         { owner: req.user.id },
         { teachers: req.user.id },
       ],
-    });
+    }).populate("owner");;
     res.json({ code: res.statusCode, success: true, courses });
   },
 
