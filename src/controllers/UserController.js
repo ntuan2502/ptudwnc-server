@@ -1,6 +1,6 @@
-const bcrypt = require("bcrypt");
-const authenticate = require("../authenticate");
-const User = require("../models/User");
+const bcrypt = require('bcrypt');
+const authenticate = require('../authenticate');
+const User = require('../models/User');
 
 class UserController {
   // [GET] /users
@@ -30,7 +30,19 @@ class UserController {
   }
 
   // [PUT] /users/:id
-  update(req, res, next) {
+  async update(req, res, next) {
+    const student = req.body.student;
+    if (student) {
+      const matchedStudent = await User.findOne({ student });
+      if (matchedStudent) {
+        res.json({
+          code: res.statusCode,
+          success: false,
+          message: 'StudentId already exists',
+        });
+        return;
+      }
+    }
     User.updateOne({ _id: req.params.id }, req.body)
       .then((user) => {
         res.json({
