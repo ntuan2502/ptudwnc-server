@@ -345,7 +345,6 @@ module.exports = {
   joinCourse: async (req, res, next) => {
     const userId = req.user._id;
     const invitation = await Invitation.findOne({ inviteCode: req.params.id });
-    console.log('userid', userId);
     if (!invitation) {
       res.json({
         code: res.statusCode,
