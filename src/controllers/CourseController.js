@@ -172,6 +172,13 @@ module.exports = {
     }
   },
 
+  /** [POST] /courses/invite
+   * req.body = {
+   *  courseId: string,
+   *  email: string,
+   *  type: number,
+   * }
+   */
   inviteUser: async (req, res, next) => {
     const course = await Course.findById(req.body.courseId);
     const userEmail = req.body.email;
