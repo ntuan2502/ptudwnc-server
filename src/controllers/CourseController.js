@@ -345,6 +345,7 @@ module.exports = {
   joinCourse: async (req, res, next) => {
     const userId = req.user._id;
     const invitation = await Invitation.findOne({ inviteCode: req.params.id });
+    console.log('userid', userId);
     if (!invitation) {
       res.json({
         code: res.statusCode,
@@ -353,7 +354,7 @@ module.exports = {
       });
       return;
     }
-    if (invitation.userId && invitation.userId !== userId) {
+    if (invitation.userId && invitation.userId !== userId.toString()) {
       res.json({
         code: res.statusCode,
         success: false,
@@ -371,6 +372,14 @@ module.exports = {
       return;
     }
     if (invitation.type === 1) {
+      if (course.teachers.includes(userId)) {
+        res.json({
+          code: res.statusCode,
+          success: false,
+          message: 'Already a teacher',
+        });
+        return;
+      }
       if (course.students && course.students.includes(userId)) {
         res.json({
           code: res.statusCode,
@@ -403,6 +412,7 @@ module.exports = {
         code: res.statusCode,
         success: true,
         message: 'Course joined successfully',
+        course: course,
       });
     } catch (err) {
       res.json({
