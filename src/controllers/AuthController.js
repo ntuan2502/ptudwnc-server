@@ -1,16 +1,15 @@
-const bcrypt = require("bcrypt");
-const authenticate = require("../authenticate");
-const User = require("../models/User");
+const bcrypt = require('bcrypt');
+const authenticate = require('../authenticate');
+const User = require('../models/User');
 
 module.exports = {
   // [POST] /auth/login
   postLogin: async (req, res) => {
     // console.log(req.body);
     const user = await User.findOne({ email: req.body.email });
-    console.log(user);
     if (
       user &&
-      (await bcrypt.compare(req.body.password, user ? user.password : ""))
+      (await bcrypt.compare(req.body.password, user ? user.password : ''))
     ) {
       const jwt = authenticate.getToken(user);
       res.json({
@@ -25,7 +24,7 @@ module.exports = {
       res.json({
         code: res.statusCode,
         success: false,
-        message: "Incorrect email or password",
+        message: 'Incorrect email or password',
       });
     }
   },
@@ -37,7 +36,7 @@ module.exports = {
       res.json({
         code: res.statusCode,
         success: false,
-        message: "The user already exists!",
+        message: 'The user already exists!',
       });
     } else {
       const newUser = new User(req.body);
@@ -46,7 +45,7 @@ module.exports = {
       res.json({
         code: res.statusCode,
         success: true,
-        message: "Successful account registration",
+        message: 'Successful account registration',
       });
     }
   },
@@ -65,7 +64,7 @@ module.exports = {
       res.json({
         code: res.statusCode,
         success: false,
-        message: "Unauthorized",
+        message: 'Unauthorized',
       });
     }
   },
