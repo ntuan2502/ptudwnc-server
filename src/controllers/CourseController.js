@@ -1,8 +1,9 @@
-const Course = require("../models/Course");
-const nodemailer = require("nodemailer");
-const { email } = require("../config/mainConfig");
-const Invitation = require("../models/Invitation.js");
-const { nanoid } = require("nanoid");
+const Course = require('../models/Course');
+const nodemailer = require('nodemailer');
+const { email, CLIENT_URL } = require('../config/mainConfig');
+const Invitation = require('../models/Invitation.js');
+const { nanoid } = require('nanoid');
+const User = require('../models/User');
 
 const createDefaultInvitation = (courseId) => {
   const newInvitation = new Invitation({
@@ -30,7 +31,7 @@ module.exports = {
         { owner: req.user.id },
         { teachers: req.user.id },
       ],
-    }).populate("owner");;
+    }).populate('owner');
     res.json({ code: res.statusCode, success: true, courses });
   },
 
@@ -63,9 +64,9 @@ module.exports = {
   // [GET] /courses/:slug
   getCourse: async (req, res, next) => {
     const course = await Course.findOne({ slug: req.params.slug })
-      .populate("teachers")
-      .populate("students")
-      .populate("owner");
+      .populate('teachers')
+      .populate('students')
+      .populate('owner');
 
     if (course) {
       if (
@@ -78,14 +79,14 @@ module.exports = {
         res.json({
           code: res.statusCode,
           success: false,
-          message: "You are not allowed to access this course",
+          message: 'You are not allowed to access this course',
         });
       }
     } else {
       res.json({
         code: res.statusCode,
         success: false,
-        message: "Course not found",
+        message: 'Course not found',
       });
     }
   },
@@ -108,7 +109,7 @@ module.exports = {
             res.json({
               code: res.statusCode,
               success: true,
-              message: "Course updated successfully",
+              message: 'Course updated successfully',
             });
           })
           .catch((err) => {
@@ -122,14 +123,14 @@ module.exports = {
         res.json({
           code: res.statusCode,
           success: false,
-          message: "You are not allowed to modify this course",
+          message: 'You are not allowed to modify this course',
         });
       }
     } else {
       res.json({
         code: res.statusCode,
         success: false,
-        message: "Course not found",
+        message: 'Course not found',
       });
     }
   },
@@ -145,7 +146,7 @@ module.exports = {
             res.json({
               code: res.statusCode,
               success: true,
-              message: "Course deleted successfully",
+              message: 'Course deleted successfully',
             });
           })
           .catch((err) => {
@@ -159,22 +160,63 @@ module.exports = {
         res.json({
           code: res.statusCode,
           success: false,
-          message: "You are not allowed to delete this course",
+          message: 'You are not allowed to delete this course',
         });
       }
     } else {
       res.json({
         code: res.statusCode,
         success: false,
-        message: "Course not found",
+        message: 'Course not found',
       });
     }
   },
 
   inviteUser: async (req, res, next) => {
+    const course = await Course.findById(req.body.courseId);
+    const userEmail = req.body.email;
+    const type = req.body.type;
+    if (!course) {
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: 'Course not found',
+      });
+      return;
+    }
+    const invitedUser = await User.findOne({ email: userEmail });
+    if (!invitedUser) {
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: 'User with email not found',
+      });
+      return;
+    }
+    const invitation = new Invitation({
+      courseId: course._id,
+      inviteCode: nanoid(8),
+      type: type === undefined ? 0 : type,
+      userId: invitedUser._id,
+    });
+    try {
+      invitation.save();
+    } catch (err) {
+      console.error(err);
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: 'Cannot create invitation',
+      });
+      return;
+    }
+    const inviteLink = `${CLIENT_URL}/courses/join/${invitation.inviteCode}`;
+    const message = type
+      ? `<p>You are invited to a course on the coursepin system. Click on the link if you agree: <a href="${inviteLink}">Link</a></p>`
+      : `<p>You are invited to be a teacher in a course on the coursepin system. Click on the link if you agree: <a href="${inviteLink}">Link</a></p>`;
     // create reusable transporter object using the default SMTP transport
     let transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
+      host: 'smtp.gmail.com',
       port: 587,
       secure: false, // true for 465, false for other ports
       auth: {
@@ -189,22 +231,22 @@ module.exports = {
     // send mail with defined transport object
     let info = await transporter.sendMail({
       from: '"CoursePin" <coursepincourseroom@gmail.com>', // sender address
-      to: "lequocdattyty191@gmail.com", // list of receivers
-      subject: "Someone invited you to join course", // Subject line
-      text: "Hello world", // plain text body
-      html: `<p>You are invited to a course on the coursepin system. Click on the link if you agree: <a href="https://google.com">Link</a></p>`, // html body
+      to: userEmail, // list of receivers
+      subject: 'Someone invited you to join course', // Subject line
+      text: 'Hello world', // plain text body
+      html: message, // html body
     });
 
-    console.log("Message sent: %s", info.messageId);
+    console.log('Message sent: %s', info.messageId);
     // Message sent: <b658f8ca-6296-ccf4-8306-87d57a0b4321@example.com>
 
     // Preview only available when sending through an Ethereal account
-    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+    console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
     // Preview URL: https://ethereal.email/message/WaQKMgKddxQDoou...
     res.json({
       code: res.statusCode,
       success: true,
-      message: "Invite success!",
+      message: 'Invite success!',
     });
   },
 
@@ -224,25 +266,25 @@ module.exports = {
         res.json({
           code: res.statusCode,
           success: false,
-          message: "Invitation not found",
+          message: 'Invitation not found',
         });
       }
     } else {
       res.json({
         code: res.statusCode,
         success: false,
-        message: "Course not found",
+        message: 'Course not found',
       });
     }
   },
 
   createInvitation: async (req, res) => {
     const { type, userId } = req.body;
-    if (!type || (type !== "1" && type !== "0") || !userId) {
+    if (!type || (type !== '1' && type !== '0') || !userId) {
       res.json({
         code: res.statusCode,
         success: false,
-        message: "Not enough inputs",
+        message: 'Not enough inputs',
       });
       return;
     }
@@ -254,7 +296,7 @@ module.exports = {
       res.json({
         code: res.statusCode,
         success: false,
-        message: "Course not found",
+        message: 'Course not found',
       });
       return;
     }
@@ -291,7 +333,7 @@ module.exports = {
       res.json({
         code: res.statusCode,
         success: false,
-        message: "Invite not found",
+        message: 'Invite not found',
       });
       return;
     }
@@ -299,7 +341,7 @@ module.exports = {
       res.json({
         code: res.statusCode,
         success: false,
-        message: "Unauthorized",
+        message: 'Unauthorized',
       });
       return;
     }
@@ -308,7 +350,7 @@ module.exports = {
       res.json({
         code: res.statusCode,
         success: false,
-        message: "Course not found",
+        message: 'Course not found',
       });
       return;
     }
@@ -317,7 +359,7 @@ module.exports = {
         res.json({
           code: res.statusCode,
           success: false,
-          message: "You have already joined this course",
+          message: 'You have already joined this course',
         });
         return;
       }
@@ -330,7 +372,7 @@ module.exports = {
         res.json({
           code: res.statusCode,
           success: false,
-          message: "You have already joined this course",
+          message: 'You have already joined this course',
         });
         return;
       }
@@ -344,7 +386,7 @@ module.exports = {
       res.json({
         code: res.statusCode,
         success: true,
-        message: "Course joined successfully",
+        message: 'Course joined successfully',
       });
     } catch (err) {
       res.json({
