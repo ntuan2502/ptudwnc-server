@@ -183,11 +183,20 @@ module.exports = {
     const course = await Course.findById(req.body.courseId);
     const userEmail = req.body.email;
     const type = req.body.type;
+    const teacherId = req.user._id;
     if (!course) {
       res.json({
         code: res.statusCode,
         success: false,
         message: 'Course not found',
+      });
+      return;
+    }
+    if (!course.teachers.toString().includes(teacherId)) {
+      res.json({
+        code: res.statusCode,
+        success: false,
+        message: 'Not authorized',
       });
       return;
     }
