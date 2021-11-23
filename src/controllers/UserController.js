@@ -34,7 +34,7 @@ class UserController {
     const student = req.body.student;
     if (student) {
       const matchedStudent = await User.findOne({ student });
-      if (matchedStudent) {
+      if (matchedStudent && matchedStudent._id.toString() !== req.params.id) {
         res.json({
           code: res.statusCode,
           success: false,
